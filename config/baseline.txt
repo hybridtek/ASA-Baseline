@@ -47,28 +47,21 @@ ntp server [xxx.xxx.xxx.xxx]
 
 ip verify reverse-path interface inside
 
-snmp-server host inside [inside SNMP server or OM IP] community rsmnetmon
-snmp-server community rsmnetmon
+snmp-server host inside [inside SNMP server] community [xxxxxxxx]
+snmp-server community [xxxxxxxx]
 snmp-server enable traps
-snmp-server group snmp-group-v3 v3 priv
-snmp-server user rsmsnmpv3 Authentication&Encryption v3 auth SHA passwordv3 priv AES 256 passwordv2
-snmp-server host inside [inside SNMP server or OM IP] community rsmnetmon version 3 rsmsnmpv3
+snmp-server group [group-name] v3 priv
+snmp-server user user1snmpv3 [group-name] v3 auth SHA [authentication-password] priv AES 256 [encryption-key]
+snmp-server host inside [inside SNMP server] community [community] version 3 user1snmpv3
 
 
+#Access Control Lists:
+#Follow these access rules based on the examples below.
 
 
+#Examples:
 
-Source: McGladrey GENESIS PROTECT Library
-
-
-
-Access Control Lists:
-Follow these access rules based on the examples below.
-
-
-Examples:
-
-Inbound:
+#Inbound:
 ! Only allow through what is necessary. There should be no Permit IP any any here.
 ! Allow all ICMP traffic inbound
 access-list inbound extended permit icmp any any
@@ -80,12 +73,10 @@ access-list inbound extended permit tcp any host 192.168.1.15 eq www
 access-list inbound extended deny ip any any
 
 
-
-
-Outbound:
+#Outbound:
 ! Allow all ICMP traffic out
 access-list outbound extended permit icmp any any
-! Allow Barracuda or mail server to send mail out
+! Allow spam filter or mail server to send mail out
 access-list outbound extended permit tcp host 10.1.10.31 any eq smtp
 ! Deny all SMTP traffic outbound incase an inside host is infected with Malware – sending out spam
 access-list outbound extended deny tcp any any eq smtp
@@ -95,9 +86,7 @@ access-list outbound extended permit ip 192.168.4.0 255.255.255.0 any
 access-list inbound extended deny ip any any
 
 
-
-
-Inspect Statement:
+#Inspect Statement:
 ! Remove ESMTP inspection since it tends to break email
 Config t
 policy-map global_policy
@@ -106,14 +95,12 @@ policy-map global_policy
 
 
 
+#Remote Access via SSH/HTTPS/Telnet:
 
+#Do not enable telnet to the device
 
-Remote Access via SSH/HTTPS/Telnet:
-
-Do not enable telnet to the device
-
-Only enable SSH to the outside for temporary maintenance when you don’t want to lose access.
-Enable SSH and HTTPS to the inside:
+#Only enable SSH to the outside for temporary maintenance when you don’t want to lose access.
+#Enable SSH and HTTPS to the inside:
 
 Example:
 SSH 192.168.1.0 255.255.255.0 inside
@@ -122,10 +109,9 @@ http server enable 445
 http 192.168.1.0 255.255.255.0 inside
 
 
+#IPSEC Tunnels:
 
-IPSEC Tunnels:
-
-When configuring phase 1 policies, do not use a DH group lower than group 5
+#When configuring phase 1 policies, do not use a DH group lower than group 5
 
 crypto ikev1 policy 2
  authentication pre-share
