@@ -1,14 +1,13 @@
 Base Configuration:
 
+Base Config to copy into Firewall:
+	NOTE: Brackets require user input.
+
 Config t
 Hostname FW-[SITENAME]
 
 #Passwords: username and password should be unique and the enable password should be 15 characters randomized with lower case, upper case, and numbers at minimum.
 
-Base Config to copy into Firewall:
-	NOTE: Brackets require user input.
-
-Example:
 Username admin password [xxxxxxxxxxxxxxx]
 Enable password [xxxxxxxxxxxxxxx]
 
@@ -34,25 +33,19 @@ aaa authentication telnet console LOCAL
 username  password
 management-access inside
 
-ciscoasa(config)# banner login                ** W A R N I N G **
-ciscoasa(config)# banner login Unauthorized access prohibited. All access is
-ciscoasa(config)# banner login monitored, and trespassers shall be prosecuted
-ciscoasa(config)# banner login to the fullest extent of the law.
-
-
-
+banner login ***************************************************************************
+banner login                ** W A R N I N G **
+banner login Unauthorized access prohibited. All access is
+banner login monitored, and trespassers shall be prosecuted
+banner login to the fullest extent of the law.
+banner login *****************************************************************************
 logging timestamp
-      banner login ***************************************************************************
-
-      banner login *****************************************************************************
-
 
 ntp server [Internal_Domain]
-ntp server 96.226.123.157
-ntp server 216.229.0.179
+ntp server [xxx.xxx.xxx.xxx]
+ntp server [xxx.xxx.xxx.xxx]
 
 ip verify reverse-path interface inside
-
 
 snmp-server host inside [inside SNMP server or OM IP] community rsmnetmon
 snmp-server community rsmnetmon
