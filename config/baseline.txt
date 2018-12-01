@@ -1,0 +1,121 @@
+Base Configuration:
+
+Base Config to copy into Firewall:
+	NOTE: Brackets require user input.
+
+Config t
+Hostname FW-[SITENAME]
+
+#Passwords: username and password should be unique and the enable password should be 15 characters randomized with lower case, upper case, and numbers at minimum.
+
+Username admin password [xxxxxxxxxxxxxxx]
+Enable password [xxxxxxxxxxxxxxx]
+
+
+domain-name [internal domain name]
+
+
+passwd [telnet password]
+clear configure dhcpd
+clear configure telnet
+telnet timeout 5
+ssh timeout 5
+console timeout 5
+no logging console
+crypto key generate rsa modulus 2048
+yes
+ssl server-version tlsv1.2
+ssl encryption aes128-sha1 aes256-sha1
+ssh version 2
+aaa authentication ssh console LOCAL
+aaa authentication http console LOCAL
+aaa authentication telnet console LOCAL
+username  password
+management-access inside
+
+banner login ***************************************************************************
+banner login                ** W A R N I N G **
+banner login Unauthorized access prohibited. All access is
+banner login monitored, and trespassers shall be prosecuted
+banner login to the fullest extent of the law.
+banner login *****************************************************************************
+logging timestamp
+
+ntp server [Internal_Domain]
+ntp server [xxx.xxx.xxx.xxx]
+ntp server [xxx.xxx.xxx.xxx]
+
+ip verify reverse-path interface inside
+
+snmp-server host inside [inside SNMP server] community [xxxxxxxx]
+snmp-server community [xxxxxxxx]
+snmp-server enable traps
+snmp-server group [group-name] v3 priv
+snmp-server user user1snmpv3 [group-name] v3 auth SHA [authentication-password] priv AES 256 [encryption-key]
+snmp-server host inside [inside SNMP server] community [community] version 3 user1snmpv3
+
+
+#Access Control Lists:
+#Follow these access rules based on the examples below.
+
+
+#Examples:
+
+#Inbound:
+! Only allow through what is necessary. There should be no Permit IP any any here.
+! Allow all ICMP traffic inbound
+access-list inbound extended permit icmp any any
+! Allow through anybody to web traffic such as OWA on port 443
+access-list inbound extended permit tcp any host 192.168.1.17 eq https
+! Allow through anybody to web traffic such as OWA on port 80
+access-list inbound extended permit tcp any host 192.168.1.15 eq www
+! There is an implicit deny at the end, but put this in any way to see hit count in show access-list command
+access-list inbound extended deny ip any any
+
+
+#Outbound:
+! Allow all ICMP traffic out
+access-list outbound extended permit icmp any any
+! Allow spam filter or mail server to send mail out
+access-list outbound extended permit tcp host 10.1.10.31 any eq smtp
+! Deny all SMTP traffic outbound incase an inside host is infected with Malware – sending out spam
+access-list outbound extended deny tcp any any eq smtp
+! Permit all inside subnets to the outside
+access-list outbound extended permit ip 192.168.4.0 255.255.255.0 any
+! There is an implicit deny at the end, but put this in any way to see hit count in show access-list command
+access-list inbound extended deny ip any any
+
+
+#Inspect Statement:
+! Remove ESMTP inspection since it tends to break email
+Config t
+policy-map global_policy
+ class inspection_default
+  no inspect esmtp
+
+
+
+#Remote Access via SSH/HTTPS/Telnet:
+
+#Do not enable telnet to the device
+
+#Only enable SSH to the outside for temporary maintenance when you don’t want to lose access.
+#Enable SSH and HTTPS to the inside:
+
+Example:
+SSH 192.168.1.0 255.255.255.0 inside
+! enable ASDM on inside on port 445 (optional port, default is 443)
+http server enable 445
+http 192.168.1.0 255.255.255.0 inside
+
+
+#IPSEC Tunnels:
+
+#When configuring phase 1 policies, do not use a DH group lower than group 5
+
+crypto ikev1 policy 2
+ authentication pre-share
+ encryption aes-256
+ hash sha
+ group 5
+ lifetime 86400
